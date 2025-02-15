@@ -130,9 +130,9 @@ MessagingService/
 ---
 
 ## 👨‍💻 Author  
-**Doluwa Taiwo** 🚀  
+**Doluwamu Taiwo Kuye** 🚀  
 - GitHub: [DOLUWAMU-TAIWO](https://github.com/DOLUWAMU-TAIWO)  
-- LinkedIn: [Doluwa Taiwo](https://linkedin.com/in/doluwa-taiwo)  
+
 
 ---
 
