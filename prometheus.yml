@@ -6,4 +6,4 @@ scrape_configs:
   - job_name: 'messaging_service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['172.21.0.4:8080']  # ✅ Use container IP
+      - targets: ['172.22.0.3:8080']  # ✅ Actual Container IP

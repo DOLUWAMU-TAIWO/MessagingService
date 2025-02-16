@@ -11,6 +11,7 @@ services:
     environment:
       - spring.security.user.password=${SERVICE_PASSWORD}
       - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - spring.profiles.active=prod
     env_file:
       - .env
     networks:
@@ -52,4 +53,5 @@ volumes:
 
 networks:
   messaging-network:
+    name: messaging-network
     driver: bridge
