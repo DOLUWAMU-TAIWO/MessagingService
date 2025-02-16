@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  messaging_service:
+    container_name: messaging_service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - spring.security.user.password=${SERVICE_PASSWORD}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+    env_file:
+      - .env
+    networks:
+      - messaging-network
+    volumes:
+      - messaging-data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - messaging-network
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "http://localhost:9090/-/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  prometheus-data:
+    driver: local
+  messaging-data:
+    driver: local
+
+networks:
+  messaging-network:
+    driver: bridge

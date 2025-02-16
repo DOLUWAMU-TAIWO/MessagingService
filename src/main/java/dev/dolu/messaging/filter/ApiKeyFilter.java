@@ -26,10 +26,12 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        String requestURI = request.getRequestURI();
         logger.info("Request [{} {}] from IP: {}",
-                request.getMethod(), request.getRequestURI(), request.getRemoteAddr());
+                request.getMethod(), requestURI, request.getRemoteAddr());
 
-        if (request.getRequestURI().startsWith("/actuator")) {
+        // ✅ Allow Prometheus to scrape metrics without API Key
+        if (requestURI.startsWith("/actuator/prometheus") || requestURI.equals("/actuator/health")) {
             logger.info("Actuator endpoint accessed from IP: {}", request.getRemoteAddr());
             filterChain.doFilter(request, response);
             return;

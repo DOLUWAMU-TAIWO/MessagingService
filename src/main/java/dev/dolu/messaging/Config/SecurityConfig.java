@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**").permitAll()  // ✅ Allow all actuator endpoints
+                        .requestMatchers("/actuator/prometheus").permitAll()  // ✅ Allow P
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class) // ✅ Register Filter Here
