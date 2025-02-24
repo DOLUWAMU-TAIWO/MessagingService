@@ -31,7 +31,10 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                 request.getMethod(), requestURI, request.getRemoteAddr());
 
         // ✅ Allow Prometheus to scrape metrics without API Key
-        if (requestURI.startsWith("/actuator/prometheus") || requestURI.equals("/actuator/health")) {
+        if (requestURI.startsWith("/actuator/prometheus") ||
+                requestURI.equals("/actuator/health") ||
+                requestURI.equals("/api/email/health")) {
+
             logger.info("Actuator endpoint accessed from IP: {}", request.getRemoteAddr());
             filterChain.doFilter(request, response);
             return;

@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**").permitAll()  // ✅ Allow all actuator endpoints
+                        .requestMatchers("/api/email/health").permitAll()  // ✅ Allow health check endpoint
                         .requestMatchers("/actuator/prometheus").permitAll()  // ✅ Allow P
                         .anyRequest().authenticated()
                 )
