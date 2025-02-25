@@ -37,6 +37,7 @@ services:
     volumes:
       - prometheus-data:/prometheus
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus-storage:/prometheus/data
     networks:
       - messaging-network
     healthcheck:

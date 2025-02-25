@@ -50,30 +50,25 @@ jobs:
           echo "${{ secrets.EC2_KEY }}" | base64 --decode > ~/decoded-key.pem
           chmod 400 ~/decoded-key.pem
 
-      # Step 8: Deploy to EC2 via SSH
+      # Step 8: SSH into EC2 and Deploy using Docker Compose
       - name: SSH into EC2 and Deploy
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/decoded-key.pem ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            # Stop and remove existing container if running
-            if [ "$(docker ps -aq -f name=messaging_service)" ]; then
-              docker stop messaging_service
-              docker rm messaging_service
-            fi
+            set -e  # Exit on error
 
-            # Pull latest image
+            # Go to the MessagingService directory
+            cd ~/MessagingService
+
+            # Stop and remove all running services
+            docker compose down || true
+
+            # Pull the latest image from Docker Hub
             docker pull ${{ secrets.DOCKER_USERNAME }}/messaging-service:latest
 
-            # Run new container
-            docker run -d --name messaging_service -p 8080:8080 -p 9091:9091 \
-              -e spring.security.user.password="${{ secrets.SERVICE_PASSWORD }}" \
-              -e SENDGRID_API_KEY="${{ secrets.SENDGRID_API_KEY }}" \
-              -e spring.profiles.active="prod" \
-              --network messaging-network \
-              --restart always \
-              ${{ secrets.DOCKER_USERNAME }}/messaging-service:latest
+            # Ensure .env is correctly set up
+            echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" > .env
+            echo "SERVICE_PASSWORD=${{ secrets.SERVICE_PASSWORD }}" >> .env
 
-            # Restart Prometheus if needed
-            if [ "$(docker ps -aq -f name=prometheus)" ]; then
-              docker restart prometheus
-            fi
+            # Deploy using Docker Compose
+            docker compose up -d --remove-orphans
           EOF
