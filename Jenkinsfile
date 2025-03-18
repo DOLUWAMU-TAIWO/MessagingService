@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Check Out') {
       steps {
-        git(url: ' https://github.com/DOLUWAMU-TAIWO/MessagingService.git', branch: 'main')
+        git(url: 'https://github.com/DOLUWAMU-TAIWO/MessagingService.git', branch: 'main')
       }
     }
 
