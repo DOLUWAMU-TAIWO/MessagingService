@@ -10,8 +10,10 @@ pipeline {
     stage('Pull from Docker ') {
       steps {
         sh '''withCredentials([usernamePassword(credentialsId: \'DOCKERHUB_CREDENTIALS\', usernameVariable: \'DOCKERHUB_USER\', passwordVariable: \'DOCKERHUB_PASSWORD\')]) {
-    docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
-    docker pull modothegreat/messaging-service:latest
+    sh \'\'\'
+        echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USER --password-stdin
+        docker pull modothegreat/messaging-service:latest
+    \'\'\'
 }'''
         }
       }
