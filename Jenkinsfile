@@ -7,14 +7,14 @@ pipeline {
       }
     }
 
-    stage('Docker login') {
-      environment {
-        DOCKERHUB_CREDENTIALS = 'credentials(\'DOCKERHUB_CREDENTIALS\')'
-      }
+    stage('Docker Login') {
       steps {
         sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
       }
     }
 
+  }
+  environment {
+    DOCKERHUB_CREDENTIALS = 'credentials(\'DOCKERHUB_CREDENTIALS\')'
   }
 }
