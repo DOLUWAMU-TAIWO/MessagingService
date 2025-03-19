@@ -7,16 +7,14 @@ pipeline {
       }
     }
 
-    stage('Pull from Docker ') {
-      steps {
-        sh '''withCredentials([usernamePassword(credentialsId: \'DOCKERHUB_CREDENTIALS\', usernameVariable: \'DOCKERHUB_USER\', passwordVariable: \'DOCKERHUB_PASSWORD\')]) {
-    sh \'\'\'
-        echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USER --password-stdin
-        docker pull modothegreat/messaging-service:latest
-    \'\'\'
-}'''
-        }
+    stage('Docker login') {
+      environment {
+        DOCKERHUB_CREDENTIALS = 'credentials(\'DOCKERHUB_CREDENTIALS\')'
       }
-
+      steps {
+        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+      }
     }
+
   }
+}
