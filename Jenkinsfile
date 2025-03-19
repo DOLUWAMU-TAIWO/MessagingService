@@ -3,17 +3,19 @@ pipeline {
     stages {
         stage('Check Out') {
             steps {
-                git(url: 'https://github.com/DOLUWAMU-TAIWO/MessagingService.git', branch: 'main')
+                git url: 'https://github.com/DOLUWAMU-TAIWO/MessagingService.git', branch: 'main'
             }
         }
         stage('Docker Login') {
             steps {
-                // Use the withCredentials block to inject your credentials securely
+                // Securely inject credentials stored with ID 'DOCKERHUB_CREDENTIALS'
                 withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', 
                                                   usernameVariable: 'DOCKERHUB_USER', 
                                                   passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-                    // The echo command pipes the password into docker login without exposing it in logs.
-                    sh 'echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USER --password-stdin'
+                    // Use a multi-line shell step with double quotes for proper environment variable expansion.
+                    sh """
+                        echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                    """
                 }
             }
         }
