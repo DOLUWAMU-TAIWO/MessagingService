@@ -36,6 +36,8 @@ public class EmailService {
 
     @Async
     public void sendEmail(String to, String subject, String contentText) throws IOException {
+        logger.info("Preparing to send email to: {}, Subject: {}", to, subject);
+
         Email from = new Email("service@qorelabs.org");
         Email toEmail = new Email(to);
         Content content = new Content("text/html", contentText);
@@ -49,16 +51,20 @@ public class EmailService {
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
+
             Response response = sg.api(request);
             logger.info("Email send response - Status Code: {}, Body: {}, Headers: {}",
                     response.getStatusCode(), response.getBody(), response.getHeaders());
+
         } catch (IOException e) {
-            logger.error("Failed to send email: {}", e.getMessage(), e);
+            logger.error("Failed to send email to {}: {}", to, e.getMessage(), e);
             status = "FAILURE";
             errorMessage = e.getMessage();
-            throw new RuntimeException("Failed to send email: " + e.getMessage());
-        } finally {
-            // Log email event to MongoDB
+        }
+
+        // Log email event to MongoDB
+        try {
+            logger.info("Saving email log to MongoDB for recipient: {}", to);
             EmailLog emailLog = new EmailLog(
                     to,
                     subject,
@@ -68,6 +74,13 @@ public class EmailService {
                     errorMessage
             );
             emailLogRepository.save(emailLog);
+            logger.info("Successfully saved email log for: {}", to);
+        } catch (Exception ex) {
+            logger.error("Failed to save email log for {}: {}", to, ex.getMessage(), ex);
+        }
+
+        if ("FAILURE".equals(status)) {
+            throw new RuntimeException("Failed to send email: " + errorMessage);
         }
     }
 
