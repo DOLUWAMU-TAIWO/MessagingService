@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: messaging-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Rate limiting annotations:
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+    nginx.ingress.kubernetes.io/limit-rpm: "60"  # Limit to 60 requests per minute
+    # Load balancing options can also be tuned, for example:
+    nginx.ingress.kubernetes.io/load-balance: "ewma"
+spec:
+  rules:
+    - host: messaging.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: messaging-service
+                port:
+                  number: 80

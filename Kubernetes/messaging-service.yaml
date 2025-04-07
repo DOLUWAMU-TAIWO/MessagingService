@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-service
+  labels:
+    app: messaging-service
+spec:
+  replicas: 2  # Adjust replicas as needed for load and high availability
+  selector:
+    matchLabels:
+      app: messaging-service
+  template:
+    metadata:
+      labels:
+        app: messaging-service
+    spec:
+      containers:
+        - name: messaging-service
+          image: modothegreat/messagingservice:latest  # Your Docker image
+          ports:
+            - containerPort: 8080   # Main application port for HTTP traffic
+            - containerPort: 9091   # Actuator/management port
+          env:
+            - name: SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: SENDGRID_API_KEY
+            - name: SERVICE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: SERVICE_PASSWORD
+            - name: SPRING_DATA_MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: messaging-config
+                  key: mongo-url
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9091
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9091
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: messaging-service
+spec:
+  type: ClusterIP
+  selector:
+    app: messaging-service
+  ports:
+    - protocol: TCP
+      port: 80         # The service port (used by the Ingress)
+      targetPort: 8080 # Your container’s application port
