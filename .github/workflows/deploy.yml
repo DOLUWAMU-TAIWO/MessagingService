@@ -68,7 +68,7 @@ jobs:
             # Ensure .env is correctly set up
             echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" > .env
             echo "SERVICE_PASSWORD=${{ secrets.SERVICE_PASSWORD }}" >> .env
-            echo "MONGODB_URI={{secrets.MONGODB_URI}}" >> .env
+            echo "MONGODB_URI=${{secrets.MONGODB_URI}}" >> .env
 
             # Deploy using Docker Compose
             docker compose up -d --remove-orphans
