@@ -12,6 +12,7 @@ services:
       - SENDGRID_API_KEY=${SENDGRID_API_KEY}
       - spring.profiles.active=prod
       - SERVICE_PASSWORD=${SERVICE_PASSWORD}  # Added explicit SERVICE_PASSWORD
+      - MONGODB_URI=${MONGODB_URI}
     env_file:
       - .env
     networks:
