@@ -46,6 +46,7 @@ public class EmailService {
         Request request = new Request();
         String status = "SUCCESS";
         String errorMessage = null;
+        int statusCode = 0; // To store the status code
 
         try {
             request.setMethod(Method.POST);
@@ -53,8 +54,17 @@ public class EmailService {
             request.setBody(mail.build());
 
             Response response = sg.api(request);
+            statusCode = response.getStatusCode();
             logger.info("Email send response - Status Code: {}, Body: {}, Headers: {}",
-                    response.getStatusCode(), response.getBody(), response.getHeaders());
+                    statusCode, response.getBody(), response.getHeaders());
+
+            // Check if the status code indicates success (e.g., 2xx range)
+            if (statusCode < 200 || statusCode >= 300) {
+                status = "FAILURE";
+                errorMessage = "SendGrid API returned an error status: " + statusCode + ", Body: " + response.getBody();
+                logger.error("Failed to send email to {}: {}", to, errorMessage);
+                throw new IOException(errorMessage); // Optionally throw an exception for the controller to handle
+            }
 
         } catch (IOException e) {
             logger.error("Failed to send email to {}: {}", to, e.getMessage(), e);
@@ -79,13 +89,16 @@ public class EmailService {
             logger.error("Failed to save email log for {}: {}", to, ex.getMessage(), ex);
         }
 
-        if ("FAILURE".equals(status)) {
+        // Keep this part if you want to throw an exception for actual IO errors
+        if ("FAILURE".equals(status) && errorMessage != null && errorMessage.startsWith("Failed to send email")) {
             throw new RuntimeException("Failed to send email: " + errorMessage);
         }
     }
 
     @Async
     public void sendBulkEmail(List<String> recipients, String subject, String contentText) throws IOException {
+        logger.info("Preparing to send bulk email to {} recipients, Subject: {}", recipients.size(), subject);
+
         Email from = new Email("service@qorelabs.org");
         Content content = new Content("text/plain", contentText);
         Mail mail = new Mail();
@@ -103,21 +116,32 @@ public class EmailService {
         Request request = new Request();
         String status = "SUCCESS";
         String errorMessage = null;
+        int statusCode = 0; // To store the status code
 
         try {
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
             Response response = sg.api(request);
+            statusCode = response.getStatusCode();
             logger.info("Bulk email send response - Status Code: {}, Body: {}, Headers: {}",
-                    response.getStatusCode(), response.getBody(), response.getHeaders());
+                    statusCode, response.getBody(), response.getHeaders());
+
+            // Check if the status code indicates success (e.g., 2xx range)
+            if (statusCode < 200 || statusCode >= 300) {
+                status = "FAILURE";
+                errorMessage = "SendGrid API returned an error status: " + statusCode + ", Body: " + response.getBody();
+                logger.error("Failed to send bulk email: {}", errorMessage);
+                throw new IOException(errorMessage); // Optionally throw an exception
+            }
+
         } catch (IOException e) {
             logger.error("Failed to send bulk email: {}", e.getMessage(), e);
             status = "FAILURE";
             errorMessage = e.getMessage();
             throw new RuntimeException("Failed to send bulk email: " + e.getMessage());
         } finally {
-            // Log bulk email event to MongoDB (logged as one record for the entire operation)
+            // Log bulk email event to MongoDB
             EmailLog emailLog = new EmailLog(
                     "bulk",
                     subject,
